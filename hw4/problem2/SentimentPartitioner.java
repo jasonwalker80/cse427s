@@ -26,23 +26,18 @@ public class SentimentPartitioner extends Partitioner<Text, IntWritable> impleme
 
   @Override
   public void setConf(Configuration configuration) {
-    /*
-     * TODO implement if necessary
-     */
+
 	  this.configuration = configuration;
 	  
 	  /*
 	   * Read the positive word list and add to positive set
-	   */
-	  /* 
-	   * TODO: make a new sentiment file parser
 	   */
 	  File positiveFile = new File("positive-words.txt");
 	  BufferedReader positiveIn = null;
 	  try {
 	      positiveIn = new BufferedReader(new InputStreamReader(new FileInputStream(positiveFile)));
 	      String line;
-	      while ((line = positiveIn.readLine()) != null) {
+	      while ((line = positiveIn.readLine()) != null) { //ensure file line is not empty
 	        if (line.matches("^;")) {
 	        	/*
 	        	 * ignore lines starting with ;
@@ -67,7 +62,7 @@ public class SentimentPartitioner extends Partitioner<Text, IntWritable> impleme
 	  	try {
 	      negativeIn = new BufferedReader(new InputStreamReader(new FileInputStream(negativeFile)));
 	      String line;
-	      while ((line = negativeIn.readLine()) != null) {
+	      while ((line = negativeIn.readLine()) != null) { //ensure file line is not empty
 	        if (line.matches("^;")) {
 	        	/*
 	        	 * ignore lines starting with ;
@@ -96,10 +91,7 @@ public class SentimentPartitioner extends Partitioner<Text, IntWritable> impleme
   /*
    * getPartition receives the words as keys (i.e., the output key from the mapper.)
    * It returns an integer representation of the sentiment category
-   * (positive, negative, neutral).
-   * 
-   * For this partitioner to work, the job configuration must have been
-   * set so that there are exactly 3 reducers.
+   * (positive, negative, neutral). We also check that 3 reducers have been specified and fail otherwise.
    */
   
   public int getPartition(Text key, IntWritable value, int numReduceTasks) {
