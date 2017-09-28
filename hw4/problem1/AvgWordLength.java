@@ -11,8 +11,15 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
+    /*
+     * Modify the class definition to extend Configured and implement Tool
+     */
 public class AvgWordLength extends Configured implements Tool {
-
+	
+    /*
+     * The main method now calls the ToolRunner.run method instead of creating the job like it did previously
+     * The ToolRunner.run method calls the underlying run method for the class AvgWordLength
+     */
   public static void main(String[] args) throws Exception {
 	  int exitCode = ToolRunner.run(new Configuration(), new AvgWordLength(), args);
 	  System.exit(exitCode);
