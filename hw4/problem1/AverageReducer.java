@@ -26,7 +26,7 @@ public class AverageReducer extends Reducer<Text, IntWritable, Text, DoubleWrita
     	  count += 1;
       }	
 	
-      averageLength.set( (double) wordLength / count);
+      averageLength.set( (double) wordLength / (double) count);
 		/*
 		 * Call the write method on the Context object to emit a key
 		 * and a value from the reduce method. 
