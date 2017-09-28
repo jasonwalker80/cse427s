@@ -9,12 +9,12 @@ import org.junit.Test;
 
 public class SentimentPartitionTest {
 
-	SentimentPartitioner<Text, IntWritable> mpart;
+	SentimentPartitioner mpart;
 
 	@Test
 	public void testSentimentPartition() {
 
-		spart=new SentimentPartitioner<Text, IntWritable>();
+		SentimentPartitioner spart = new SentimentPartitioner();
 		spart.setConf(new Configuration());
 		int result;		
 		
@@ -26,7 +26,14 @@ public class SentimentPartitionTest {
  		/*
 		 * TODO implement
 		 */          
+		result = spart.getPartition(new Text("love"), new IntWritable(1), 3);
+		assertEquals(0, result);
 		
+		result = spart.getPartition(new Text("deadly"), new IntWritable(1), 3);
+		assertEquals(1, result);
+		
+		result = spart.getPartition(new Text("zodiac"), new IntWritable(1), 3);
+		assertEquals(2, result);
 	}
 
 }
