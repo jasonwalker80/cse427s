@@ -1,7 +1,15 @@
 package stubs;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashSet;
+import java.util.Set;
 
+import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.conf.Configurable;
@@ -12,8 +20,8 @@ public class SentimentPartitioner extends Partitioner<Text, IntWritable> impleme
     Configurable {
 
   private Configuration configuration;
-  Set<String> positive = new HashSet<String>;
-  Set<String> negative = new HashSet<String>;
+  Set<String> positive = new HashSet<String>();
+  Set<String> negative = new HashSet<String>();
 
 
   @Override
@@ -21,6 +29,60 @@ public class SentimentPartitioner extends Partitioner<Text, IntWritable> impleme
     /*
      * TODO implement if necessary
      */
+	  this.configuration = configuration;
+	  
+	  /*
+	   * Read the positive word list and add to positive set
+	   */
+	  /* 
+	   * TODO: make a new sentiment file parser
+	   */
+	  File positiveFile = new File("positive-words.txt");
+	  BufferedReader positiveIn = null;
+	  try {
+	      positiveIn = new BufferedReader(new InputStreamReader(new FileInputStream(positiveFile)));
+	      String line;
+	      while ((line = positiveIn.readLine()) != null) {
+	        if (line.matches("^;")) {
+	        	/*
+	        	 * ignore lines starting with ;
+	        	 */
+	        } else {
+	        	positive.add(line.toString());
+	        } 
+	      }
+	    } catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+	      IOUtils.closeStream(positiveIn);
+	    }		
+	  
+	  	/*
+	  	 * Parse the negative word list and add to the negative set
+	  	 */
+	  	File negativeFile = new File("negative-words.txt");	
+	  	BufferedReader negativeIn = null;
+	  	try {
+	      negativeIn = new BufferedReader(new InputStreamReader(new FileInputStream(negativeFile)));
+	      String line;
+	      while ((line = negativeIn.readLine()) != null) {
+	        if (line.matches("^;")) {
+	        	/*
+	        	 * ignore lines starting with ;
+	        	 */
+	        } else {
+	        	negative.add(line.toString());
+	        } 
+	      }
+	    } catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+	      IOUtils.closeStream(negativeIn);
+	    }	
   }
 
   /**
@@ -31,27 +93,42 @@ public class SentimentPartitioner extends Partitioner<Text, IntWritable> impleme
     return configuration;
   }
 
-  /**
-   * You need to implement the getPartition method for a partitioner class.
-   * This method receives the words as keys (i.e., the output key from the mapper.)
-   * It should return an integer representation of the sentiment category
+  /*
+   * getPartition receives the words as keys (i.e., the output key from the mapper.)
+   * It returns an integer representation of the sentiment category
    * (positive, negative, neutral).
    * 
    * For this partitioner to work, the job configuration must have been
    * set so that there are exactly 3 reducers.
    */
+  
   public int getPartition(Text key, IntWritable value, int numReduceTasks) {
-    /*
-     * TODO implement
-     * Change the return 0 statement below to return the number of the sentiment 
-     * category; use 0 for positive words, 1 for negative words, and 2 for neutral words. 
-     * Use the sets of positive and negative words to find out the sentiment.
-     *
-     * Hint: use positive.contains(key.toString()) and negative.contains(key.toString())
-     * If a word appears in both lists assume it is positive. That is, once you found 
-     * that a word is in the positive list you do not need to check if it is in the 
-     * negative list. 
-     */
-     return 0;
+	  /*
+	   * Fail unless we have exactly three reducers
+	   */
+	  if ( numReduceTasks != 3 ) {
+		  System.out.printf("Must define exactly 3 reducers in job configuration!");
+	      System.exit(1);
+	  }
+	  /* 
+	   * Test each condition, positive, negative and if not found assume neutral
+	   * If the word is found in the first set do not look in the other sets
+	   */
+	  if ( positive.contains( key.toString() ) ) {
+		  /*
+		   * positive word, return 0 for reducer
+		   */
+		  return 0;
+	  } else if ( negative.contains( key.toString() ) ) {
+		  /* 
+		   * negative word, return 1 for reducer 
+		   */
+		  return 1;
+	  } else {
+		  /*
+		   * neutral word, return 2 for reducer
+		   */
+		  return 2;
+	  }
   }
 }
