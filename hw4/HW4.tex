@@ -1,0 +1,61 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.5in]{geometry}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+\begin{document}
+\begin{flushright}
+Bob Skowron, Jason Walker\\
+Keys: rskowron\\
+IDs: 453478\\
+SVN: ?\\
+\end{flushright}
+
+\begin{itemize}
+\item[1.] 
+	\begin{itemize}
+	\item[a.] Test input: No now is definitely not the best time \\
+		Mapper output:\\
+			(N, 2)\\
+			(n, 3)\\
+			(i, 2)\\
+			(d, 10)\\
+			(n, 3)\\
+			(t, 3)\\
+			(b, 3)\\
+			(t, 4)\\
+		Reducer input:\\
+			(N, 2)\\
+			(b, 3)\\
+			(d, 10)\\
+			(i, 2)\\
+			(n, [3, 3])\\	
+			(t, [3, 4])\\
+		Reducer output:\\
+			(N, 2.0)\\
+			(b, 4.0)\\
+			(d, 10.0)\\
+			(i, 2.0)\\
+			(n, 3.0)\\
+			(t, 3.5)\\
+	\item[b.] ?? here referring to output or actually in the way the job executes ??
+	\item[c.] ?? same question ??
+	\item[d.] %\textit{hadoop fs -cat awl_default/part-r-00000 \text{\textbar} grep -e A -w -e W -w -e a -w -e t -w -e z -w}
+		A: 3.891394576646375\\
+		W: 4.464014043300176\\
+		a: 3.0776554817818575\\
+		t: 3.733261651336357\\
+		z: 4.672727272727273\\
+	\item[e.] 
+		Command: \textit{hadoop jar awl.jar stubs.AvgWordLength /-D caseSensitive=false shakespeare awl\_caseins} \\
+		If we specified the parameter for caseSensitive after the input/output paths it would simply be ignored and the default value would be used.\\
+		a: 3.0776554817818575\\
+		w: 4.3475752474027844\\
+		z: 4.672727272727273\\
+	\end{itemize}
+\end{itemize}
+
+\end{document}
