@@ -41,8 +41,8 @@ SVN: ?\\
 			(i, 2.0)\\
 			(n, 3.0)\\
 			(t, 3.5)\\
-	\item[b.] ?? here referring to output or actually in the way the job executes ??
-	\item[c.] ?? same question ??
+	\item[b.] There are no differences in execution. The outputs return the same results. The only nuance is that instead of running the job as part of the \textit{main} method, the job is run by ToolRunner via the \textit{run} method.
+	\item[c.] Yes, the ToolRunner parses the parameter \textit{-D caseSensitive=false} and sets it in the configuration where the mapper uses it to determine how to set the case sensitivity of the words. In this case, it adjusts them all to lower case and the output reflects the face that N and n are both considered the same key.
 	\item[d.] %\textit{hadoop fs -cat awl_default/part-r-00000 \text{\textbar} grep -e A -w -e W -w -e a -w -e t -w -e z -w}
 		A: 3.891394576646375\\
 		W: 4.464014043300176\\
@@ -50,12 +50,31 @@ SVN: ?\\
 		t: 3.733261651336357\\
 		z: 4.672727272727273\\
 	\item[e.] 
-		Command: \textit{hadoop jar awl.jar stubs.AvgWordLength /-D caseSensitive=false shakespeare awl\_caseins} \\
-		If we specified the parameter for caseSensitive after the input/output paths it would simply be ignored and the default value would be used.\\
-		a: 3.0776554817818575\\
-		w: 4.3475752474027844\\
-		z: 4.672727272727273\\
+		Command: \textit{hadoop jar awl.jar stubs.AvgWordLength -D caseSensitive=false shakespeare awl\_caseinsensitive} \\
+		In the run method we specifically check if there are only 2 arguments passed. Since the toolrunner assumes that its parameters are passed first (via the keys) then it passes $<$input$>$ $<$output$>$ $<$params$>$ through to the run method where it will throw an error after counting 3.\\
+		a: 3.275899648342265\\
+		w: 4.373096283946263\\
+		z: 5.053333333333334\\
 	\end{itemize}
+	
+\pagebreak
+
+\item[2.]
+	\begin{itemize}
+	\item[a.] See SVN
+	\item[b.] See SVN
+	\item[c.] 
+	%hadoop fs -cat wcpart/part-r-00000 | wc -l
+		\item Positive Words: 405
+		\item Negative Words: 1927
+		\item Neutral Words: 5215\\	
+		Sentiment Score = $\frac{405-805}{405+805} \approx -0.33$ \\
+		Positivity Score = $\frac{405}{405+805} \approx .33$ \\
+		Based on these statistics, I would say that Shakespeare's poems exhibit an overall negative sentiment.
+	\item[d.] First, the above statistics do not take into contextual polarity. Namely, we do not consider modifiers to any of the words. These could negate or intensify the primary positive or negative word identified. Secondly, the statistics do not take into account the frequency of the positive or negative words. A simple way to correct for the latter shortcoming would be to simply use the sum of the wordcounts for positive and negative words instead of merely the count of positive and negative words. The former shortcoming is much more difficult. A first pass could be to simply check the word that appears prior to the word of interest and determine if it is negating, intensifying or minimizing the target word. This still will not fully capture the sentiment however, as total context is necessary. For instance, a but clause could negate a positive and negative sentiment (e.g. I like this place but hate the crowds). There are numerous more complicated examples, but handling all of them requires work in mapping words to parts of speech, identifying the sentence structure and then analyzing.
+	
+	\end{itemize}		
+	
 \end{itemize}
 
 \end{document}
