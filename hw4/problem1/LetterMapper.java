@@ -8,6 +8,9 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 public class LetterMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
+	/*
+	 * Initialize objects for length and letter. Also initialize variable for case sensitivity
+	 */
   private IntWritable lengthObject = new IntWritable();
   private Text letterObject = new Text();
   private boolean caseSensitive;
@@ -32,11 +35,23 @@ public class LetterMapper extends Mapper<LongWritable, Text, Text, IntWritable> 
 	 * line up by non-word characters.
 	 */
 	 for (String word : line.split("\\W+")) {
+		 /*
+		  * Only process words that have length greater than zero
+		  */
 		if (word.length() > 0) {
+			/*
+			 * Pull the first letter off the word with substring
+			 */
 			String letter = word.substring(0, 1);
 			if (caseSensitive) {
+				/*
+				 * In caseSensitive mode, do not lower case
+				 */
 				letterObject.set(letter);
 			} else {
+				/*
+				 * when case INsensitive, lowerCase the letter
+				 */
 				letterObject.set(letter.toLowerCase());
 			}
 			lengthObject.set(word.length());
