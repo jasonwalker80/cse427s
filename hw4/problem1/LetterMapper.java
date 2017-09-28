@@ -13,8 +13,8 @@ public class LetterMapper extends Mapper<LongWritable, Text, Text, IntWritable> 
   private boolean caseSensitive;
   
   public void setup(Context context) {
-	  Configuration conf = context.getConfiguration();
-	  caseSensitive = conf.getBoolean("caseSensitive", true);
+	  Configuration conf = context.getConfiguration(); // get the configuration from the job's context
+	  caseSensitive = conf.getBoolean("caseSensitive", true); // retrieve the parameter caseSensitive, default to true if not specified
   }
   
   @Override
