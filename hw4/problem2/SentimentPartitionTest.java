@@ -13,7 +13,9 @@ public class SentimentPartitionTest {
 
 	@Test
 	public void testSentimentPartition() {
-
+		/*
+		 * Create a new partitioner object and set the configuration
+		 */
 		SentimentPartitioner spart = new SentimentPartitioner();
 		spart.setConf(new Configuration());
 		int result;		
@@ -22,10 +24,7 @@ public class SentimentPartitionTest {
 		 * Test the words "love", "deadly", and "zodiac". 
 		 * The expected outcomes should be 0, 1, and 2. 
 		 */
-        
- 		/*
-		 * TODO implement
-		 */          
+             
 		result = spart.getPartition(new Text("love"), new IntWritable(1), 3);
 		assertEquals(0, result);
 		
