@@ -18,6 +18,9 @@ import org.apache.hadoop.mapreduce.Partitioner;
 
 public class SentimentPartitioner extends Partitioner<Text, IntWritable> implements
     Configurable {
+	/*
+	 * Initialize configuration variable and positive/negative word sets
+	 */
 
   private Configuration configuration;
   Set<String> positive = new HashSet<String>();
@@ -26,6 +29,9 @@ public class SentimentPartitioner extends Partitioner<Text, IntWritable> impleme
 
   @Override
   public void setConf(Configuration configuration) {
+	  /*
+	   * set the configuration on this object
+	   */
 
 	  this.configuration = configuration;
 	  
