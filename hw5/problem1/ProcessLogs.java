@@ -24,7 +24,11 @@ public class ProcessLogs extends Configured implements Tool {
       System.exit(-1);
     }
 
-    Job job = new Job();
+    /*
+     * Instantiate a Job object for your job's configuration.  
+     */
+    Job job = new Job(getConf());
+    
     job.setJarByClass(ProcessLogs.class);
     job.setJobName("Process Logs");
 
