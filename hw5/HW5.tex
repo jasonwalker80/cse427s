@@ -1,0 +1,98 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.5in]{geometry}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+ 
+\urlstyle{same}
+
+\begin{document}
+\begin{flushleft}
+Names: Bob Skowron, Jason Walker\\
+Keys: rskowron, jwalker\\
+SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/}\\
+\end{flushleft}
+
+\begin{itemize}
+\item[1.] 
+	\begin{itemize}
+	\item[a.] The data format is a flat text file where each record represents a user making GET requests to some server. The information stored in each record is:\\
+		\begin{itemize}
+		\item IP Address
+		\item Timestamp (date and time)
+		\item URL accessed
+		\item HTTP response code
+		\item Elapsed time of the request
+		\end{itemize}
+	%hadoop fs -cat testlog/test_access_log | head -5
+	The test log has 5000 rows and the full data set has 4,477,843, so our sample is approximately .11\% of the total.	
+	
+	\item[b.] Mapper Input:\\
+		(byteoffset, 10.223.157.186 - - [15/Jul/2009:21:24:17 -0700] "GET /assets/img/media.jpg HTTP/1.1" 200 110997)\\
+		(byteoffset, 10.223.157.186 - - [15/Jul/2009:21:24:18 -0700] "GET /assets/img/pdf-icon.gif HTTP/1.1" 200 228)\\
+		(byteoffset, 10.216.113.172 - - [16/Jul/2009:02:51:28 -0700] "GET / HTTP/1.1" 200 7616)\\
+		(byteoffset, 10.216.113.172 - - [16/Jul/2009:02:51:29 -0700] "GET /assets/js/lowpro.js HTTP/1 .1" 200 10469)\\
+		(byteoffset, 10.216.113.172 - - [16/Jul/2009:02:51:29 -0700] "GET /assets/css/reset.css HTTP/1.1" 200 1014)\\
+		
+	Mapper Output:\\
+		(10.223.157.186, 1)\\
+		(10.223.157.186, 1)\\
+		(10.216.113.17, 1)\\
+		(10.216.113.17, 1)\\
+		(10.216.113.17, 1)\\
+
+	Reducer Input:\\
+		(10.223.157.186, [1, 1])\\
+		(10.216.113.17, [ 1, 1, 1])\\
+		
+	Reducer Output:\\
+		(10.223.157.186, 2)\\
+		(10.216.113.17, 3)\\
+
+	The reducer is summing over an array of ones, same as we saw with the word count examples.
+	
+	\item[c.] N/A
+	\item[d.]
+		\begin{itemize}
+		\item[i.] Running the job locally, your inputs and outputs are local files and folders, respectively. When running on the cluster, the inputs and outputs are stored in hdfs. Print outputs, when run locally, are written out to the console for the end user to review. When run on the cluster, those outputs are not written out to the user. Running locally, there is no job management. The current job is what is run. When run on the cluster, hadoop (namely YARN) has to manage the resources on the cluster.
+		\item[ii.]
+		\textit{hadoop jar logfileanalysis.jar stubs.ProcessLogs -fs=file:/// -jt=local ~/workspace/log\_file\_analysis/src/test\_log\_file output\_test}
+		\item[iii.] Used toolrunner. Indifferent between the two
+		\end{itemize}
+	\item[e.]
+	%hadoop jar logfileanalysis.jar stubs.ProcessLogs testlog/test_access_log testlog/output_test
+	%hadoop fs -cat testlog/output_test/part-r-00000 | wc -l
+	Based on the output, there are 10 unique IP addresses in the testlog file. Yes, every line contributed to a count. The sum of the counts in the output file sum to 5000, which is the original number of line items
+	\item[f.]
+	%hadoop jar logfileanalysis.jar stubs.ProcessLogs weblog/access_log weblog/output_ipcount
+	When running the job on an actual cluster we need to keep in mind....
+	%to get results
+	%hadoop fs -cat weblog/output_ipcount/part-r-00000 | wc -l
+	%hadoop fs -cat weblog/output_ipcount/part-r-00000 | grep -e 10.1.100.199 -w -e 10.1.100.5 -w -e 10.99.99.58 -w
+	\begin{itemize}
+	\item Total number of IP Addresses: 333,923
+	\item 10.1.100.199: 35
+	\item 10.1.100.5: 1
+	\item 10.99.99.58: 21
+	\end{itemize}
+	The results are globally sorted because the text sort done in the shuffle and sort step...	blah blah blah
+	
+	\end{itemize}
+	
+\pagebreak
+
+\item[2.]
+
+	
+\end{itemize}
+
+\end{document}
