@@ -8,7 +8,11 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 public class WordCoMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
+	/*
+	 * Define a static string to be used as the separator between word pair keys
+	 */
 	private static String separator = ", ";
+	
   @Override
   public void map(LongWritable key, Text value, Context context)
       throws IOException, InterruptedException {
@@ -24,6 +28,11 @@ public class WordCoMapper extends Mapper<LongWritable, Text, Text, IntWritable> 
 	   * line up by non-word characters.
 	   */
 	  String[] words = line.split("\\W+");
+	  
+	  /*
+	   * A "C-style" iterator to go over the entire array
+	   * Using this iterator we can get the next object, i+1
+	   */
 	  
 	  for (int i=0; i < (words.length-1); i++) { // only iterate to line - 1 (array out of bounds)
 		  String word1 = words[i];
