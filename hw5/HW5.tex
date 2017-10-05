@@ -74,7 +74,14 @@ SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/
 	Based on the output, there are 10 unique IP addresses in the testlog file. Yes, every line contributed to a count. The sum of the counts in the output file sum to 5000, which is the original number of line items
 	\item[f.]
 	%hadoop jar logfileanalysis.jar stubs.ProcessLogs weblog/access_log weblog/output_ipcount
-	When running the job on an actual cluster we need to keep in mind....
+	When running the job on an actual cluster we need to keep in mind:
+		\begin{itemize}
+		\item Size of the input file we will be processing as well as the number of records.
+		\item Number of reducers we are using to process the expected number of records.
+		\item Communication cost for both Mapper and Reducer based on the numer of records.
+		\item Compute resources, ex. slots, CPUs, RAM, etc. available to the cluster.
+		\item Storage of both intermediate as well as final MR output on HDFS.
+		\end{itemize}
 	%to get results
 	%hadoop fs -cat weblog/output_ipcount/part-r-00000 | wc -l
 	%hadoop fs -cat weblog/output_ipcount/part-r-00000 | grep -e 10.1.100.199 -w -e 10.1.100.5 -w -e 10.99.99.58 -w
