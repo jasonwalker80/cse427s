@@ -66,7 +66,7 @@ SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/
 		\item[i.] Running the job locally, your inputs and outputs are local files and folders, respectively. When running on the cluster, the inputs and outputs are stored in hdfs. Print outputs, when run locally, are written out to the console for the end user to review. When run on the cluster, those outputs are not written out to the user. Running locally, there is no job management. The current job is what is run. When run on the cluster, hadoop (namely YARN) has to manage the resources on the cluster.
 		\item[ii.]
 		\textit{hadoop jar logfileanalysis.jar stubs.ProcessLogs -fs=file:/// -jt=local ~/workspace/log\_file\_analysis/src/test\_log\_file output\_test}
-		\item[iii.] Used toolrunner. Indifferent between the two
+		\item[iii.] Using Eclipse is a personal preference. The first reason is the JAR file does not need to be compiled and stored on the filesystem. Eclipse is smart enough to use the classes within the project currently under development. This reduces the chances of forgetting to recompile the JAR after editing. The second reason is that command line arguments and inputs can easily be passed to the Run Configuration without having to tell hadoop to use the local filesystem. Each configuration can then be edited or customized as needed without having to go to/from the command line.
 		\end{itemize}
 	\item[e.]
 	%hadoop jar logfileanalysis.jar stubs.ProcessLogs testlog/test_access_log testlog/output_test
