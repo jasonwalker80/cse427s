@@ -12,6 +12,7 @@ import org.apache.hadoop.mapreduce.Job;
 
 public class ProcessLogs extends Configured implements Tool {
 
+	// implement main method to invoke ToolRunner
 	public static void main(String[] args) throws Exception {
 		  int exitCode = ToolRunner.run(new Configuration(), new ProcessLogs(), args);
 		  System.exit(exitCode);
@@ -45,6 +46,7 @@ public class ProcessLogs extends Configured implements Tool {
     job.setMapperClass(LogFileMapper.class);
     job.setReducerClass(SumReducer.class);
     
+    // for testing outputs of the mapper, set to 0
     //job.setNumReduceTasks(0);
 
     /*
