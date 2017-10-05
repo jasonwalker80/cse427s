@@ -28,7 +28,7 @@ public class SumReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
   @Override
 	public void reduce(Text key, Iterable<IntWritable> values, Context context)
 			throws IOException, InterruptedException {
-		int hitCount = 0;
+		int pairCount = 0;
 		
 		/*
 		 * For each value in the set of values passed to us by the mapper:
@@ -38,13 +38,13 @@ public class SumReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
 		  /*
 		   * Add the value to the word count counter for this key.
 		   */
-			hitCount += value.get();
+			pairCount += value.get();
 		}
 		
 		/*
 		 * Call the write method on the Context object to emit a key
 		 * and a value from the reduce method. 
 		 */
-		context.write(key, new IntWritable(hitCount));
+		context.write(key, new IntWritable(pairCount));
 	}
 }
