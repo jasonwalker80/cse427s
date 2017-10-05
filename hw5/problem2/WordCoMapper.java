@@ -22,16 +22,13 @@ public class WordCoMapper extends Mapper<LongWritable, Text, Text, IntWritable> 
 	  /*
 	   * The line.split("\\W+") call uses regular expressions to split the
 	   * line up by non-word characters.
-	   * 
-	   * If you are not familiar with the use of regular expressions in
-	   * Java code, search the web for "Java Regex Tutorial." 
 	   */
 	  String[] words = line.split("\\W+");
 	  
-	  for (int i=0; i < (words.length-1); i++) {
+	  for (int i=0; i < (words.length-1); i++) { // only iterate to line - 1 (array out of bounds)
 		  String word1 = words[i];
 		  String word2 = words[i+1];
-		  String wordSeparator = word1.concat(separator);
+		  String wordSeparator = word1.concat(separator); //join the words together
 		  String wordPair = wordSeparator.concat(word2);
 		  /*
 		   * Call the write method on the Context object to emit a key
