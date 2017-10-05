@@ -29,7 +29,7 @@ public class LogFileMapper extends Mapper<LongWritable, Text, Text, IntWritable>
 	     * We need to split the string to pull the IP address out.
 	     * There are several ways to do this:
 	     * Find first dash, take to the left
-	     * Here i have opted for the regex to ensure we get a good value
+	     * Here I have opted for the regex to ensure we get a good value
 	     */
 	    Pattern p = Pattern.compile("\\b\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\b");
 	    Matcher m = p.matcher(line);
@@ -38,8 +38,8 @@ public class LogFileMapper extends Mapper<LongWritable, Text, Text, IntWritable>
 	     * The first record in the array should be IP address if split properly
 	     */
 	    
-	    if(m.find()){
-		    	String ipAddress = m.group(0);
+	    if(m.find()){ // if we find the pattern in the line
+		    	String ipAddress = m.group(0); // get the first match of the pattern
 			    /*
 		         * Call the write method on the Context object to emit a key
 		         * and a value from the map method. Here we write 1 back for a simple sum
