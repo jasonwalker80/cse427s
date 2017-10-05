@@ -21,13 +21,11 @@ public class WordCo extends Configured implements Tool {
       return -1;
     }
 
+    // set up the job configuration
     Job job = new Job(getConf());
     job.setJarByClass(WordCo.class);
     job.setJobName("Word Co-Occurrence");
 
-    /*
-     * TODO implement
-     */    
     /*
      * Specify the paths to the input and output data based on the
      * command-line arguments.
@@ -53,6 +51,7 @@ public class WordCo extends Configured implements Tool {
     return success ? 0 : 1;
   }
 
+  // implement the main method to invoke ToolRunner
   public static void main(String[] args) throws Exception {
     int exitCode = ToolRunner.run(new Configuration(), new WordCo(), args);
     System.exit(exitCode);
