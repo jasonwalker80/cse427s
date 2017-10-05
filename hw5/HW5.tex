@@ -1,37 +1,39 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
-\usepackage[margin=0.5in]{geometry}
+\usepackage[margin=0.5in,includehead,includefoot]{geometry}
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{fancyhdr}
 \hypersetup{
     colorlinks=true,
     linkcolor=blue,
     filecolor=magenta,      
     urlcolor=cyan,
 }
- 
+
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0pt} % no line in header area
+\lhead{Names: Bob Skowron, Jason Walker\\
+Keys: rskowron, jwalker\\
+SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/}\\}% Right header
+
 \urlstyle{same}
+\renewcommand{\labelitemiii}{$\bullet$}
 
 \begin{document}
-\begin{flushleft}
-Names: Bob Skowron, Jason Walker\\
-Keys: rskowron, jwalker\\
-SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/}\\
-\end{flushleft}
-
 \begin{itemize}
 \item[1.] 
 	\begin{itemize}
 	\item[a.] The data format is a flat text file where each record represents an HTTP protocol request served by the server generating the log file taking requests from hosts whose IP is recorded within the log record. The information stored in each record is:\\
 		\begin{itemize}
-		\item IP Address
-		\item Timestamp (date and time)
-		\item URL accessed
-		\item HTTP response code
-		\item Elapsed time of the request
+			\item IP Address
+			\item Timestamp (date and time)
+			\item URL accessed
+			\item HTTP response code
+			\item Elapsed time of the request
 		\end{itemize}
 	%hadoop fs -cat testlog/test_access_log | head -5
 	The test log has 5000 rows and the full data set has 4,477,843, so our sample is approximately .11\% of the total.	
@@ -60,7 +62,7 @@ SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/
 
 	The reducer is summing over an array of ones, same as we saw with the word count examples.
 	
-	\item[c.] N/A
+	\item[c.] See SVN
 	\item[d.]
 		\begin{itemize}
 		\item[i.] Running the job locally, your inputs and outputs are local files and folders, respectively. When running on the cluster, the inputs and outputs are stored in hdfs. Print outputs, when run locally, are written out to the console for the end user to review. When run on the cluster, those outputs are not written out to the user. Running locally, there is no job management. The current job is what is run. When run on the cluster, hadoop (namely YARN) has to manage the resources on the cluster.
@@ -80,24 +82,35 @@ SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/
 		\item Number of reducers we are using to process the expected number of records.
 		\item Communication cost for both Mapper and Reducer based on the numer of records.
 		\item Compute resources, ex. slots, CPUs, RAM, etc. available to the cluster.
-		\item Storage of both intermediate as well as final MR output on HDFS.
+		\item Storage of both intermediate as well as final MR output on HDFS.\\
 		\end{itemize}
 	%to get results
 	%hadoop fs -cat weblog/output_ipcount/part-r-00000 | wc -l
 	%hadoop fs -cat weblog/output_ipcount/part-r-00000 | grep -e 10.1.100.199 -w -e 10.1.100.5 -w -e 10.99.99.58 -w
+	
 	\begin{itemize}
 	\item Total number of IP Addresses: 333,923
 	\item 10.1.100.199: 35
 	\item 10.1.100.5: 1
 	\item 10.99.99.58: 21
 	\end{itemize}
-	The results are globally sorted because the text sort done in the shuffle and sort step...	blah blah blah
-	
-	\end{itemize}
-	
+	The results are globally sorted because there is only one reducer. The shuffle and sort passes all keys to the single reducer in sorted order.	
+	\end{itemize}	
 \pagebreak
-
 \item[2.]
+	\begin{itemize}
+	\item[a.] See SVN
+	\item[b.] The communication cost of the job is given by:\\
+		number of key-value pairs that are Mapper input (n) + \\
+		number of key-list-of-values pairs that are Reducer input (m)\\
+		% assumption here is "Map input records" + "Reduce input groups"
+		Here, n + m = 173,126 + 305,680 = 478,806
+	\item[c.] Simply measuring the co-occurrence words next to one another may not give the entire context of the text. For example:\\
+		\textit{The most interesting bird is the falcon}\\
+		\textit{This class is very hard}\\
+		Ideally, we would like to identify (bird, falcon) or (interesting, falcon) together to gain any information. If we only focus on pairs we lose the context of the sentence. If we were trying to identify sentiment about falcons, we wouldn't be able to discern much. Similarly, when modifiers do not come directly before or after a word of interest, a pairs based co-occurrence falls short. Even in the latter example if we remove the stop words we would only get (class, very) and (very, hard). Hardly a useful set of word pairings to determine the sentiment of a student taking this class.
+	\item[d.] Because the text is stored in HDFS, it may be the case that a line of text goes over a block boundary. Now, hadoop should handle this, and for side by side pairs this is not too much to ask. However, if you were to be looking at neighbors of words that were several steps away, hadoop would need to buffer potentially a lot of data to map all the pairs. This could be very memory intensive.
+	\end{itemize}
 
 	
 \end{itemize}
