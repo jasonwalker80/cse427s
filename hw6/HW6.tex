@@ -53,6 +53,29 @@ SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/
 
 \pagebreak
 \item[2.]
+	\begin{itemize}
+		\item[a.] job.setCombinerClass(SumReducer.class);\\
+			No, the output does not change.
+		\item[b.] 
+			\begin{tabular}{|c||c|c|}
+				\hline 
+				\textbf{Counter} & \textbf{With Combiner} & \textbf{Without Combiner}\\
+				FILE: number of bytes read & 99,540 & 156,981,268\\
+				FILE: number of bytes written & 373,984 & 236,309,496\\
+				HDFS: number of bytes read & 58,524,136 & 58,524,136\\
+				HDFS: number of bytes written & 47,019 & 47,019\\
+				\hline
+			\end{tabular}
+		\\		
+		The number of bytes written and read from HDFS do not change because the data read from HDFS (namely the TrainingRatings dataset) is the same in both cases. They both need to read the entire set and regardless of using the Combiner or not, we get the same answer and thus the same output bytes. The bytes written and read though on the filesystem do change, and are reduced with the Combiner. This is because the Combiner reduces the amount of intermediate data produced by the mappers by collapsing all the Mapper output from a given compute node before writing the intermediate data.\\
+		Number of key-value pairs combined: 1,789 			
+		\item[c.] We can use the SumReducer as the Combiner because:
+			\item Our reduce step is summation, which is commutative and associative
+			%\item The input data types of the Combiner and Reducer are the same (Text, IntWritable)
+			\item The output data types of the Combiner and Mapper are the same (Text, IntWritable)
+		\item[d.] A Reducer that finds the median would not be able to be used as the Combiner because it is not associative
+	
+	\end{itemize}
 
 	
 \end{itemize}
