@@ -101,12 +101,13 @@ public class AggregateRatingsMapper extends Mapper<LongWritable, Text, Text, Int
     	String movieTitle = null;
     	if (movieMap.containsKey(movieId)) {
     		movieTitle = movieMap.get(movieId);
+		
+		int rating = (int) ratingDouble;
+        	context.write(new Text(movieTitle), new IntWritable(rating));
     	} else {
     		System.out.printf("Unable to find movie title for ID!");
-  	      	System.exit(1);
     	}
-    	int rating = (int) ratingDouble;
-        context.write(new Text(movieTitle), new IntWritable(rating));
+
     }
   }
 }
