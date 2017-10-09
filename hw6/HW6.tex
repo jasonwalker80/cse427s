@@ -1,0 +1,60 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.5in,includehead,includefoot]{geometry}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0pt} % no line in header area
+\lhead{Names: Bob Skowron, Jason Walker\\
+Keys: rskowron, jwalker\\
+SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/}\\}% Right header
+
+\urlstyle{same}
+\renewcommand{\labelitemiii}{$\bullet$}
+
+\begin{document}
+\begin{itemize}
+\item[1.] 
+	\begin{itemize}
+		\item[a.] See SVN
+		\item[b.] 
+		%hadoop jar aggregateratings.jar stubs.AggregateRating -file=movie_details.txt netflix/TestingRatings.txt netflix/testing_output
+		%hadoop jar TopNList.jar stubs.TopNDriver -D N=3 netflix/testing_output/part-r-00000 netflix/testing_topn_output
+		%hadoop jar aggregateratings.jar stubs.AggregateRatings -files=movie_titles.txt netflix/TrainingRatings.txt netflix/training_output
+		%hadoop jar TopNList.jar stubs.TopNDriver -D N=15 netflix/training_output/part-r-00000 netflix/training_topn_output
+		%hadoop fs -cat netflix/training_topn_output/part-r-00000
+		103701	Ferris Bueller's Day Off\\
+		95216	Rain Man\\
+		94398	Seven\\
+		92377	The Godfather\\
+		92029	The Incredibles\\
+		90891	Pretty Woman\\
+		88670	As Good as It Gets\\
+		82862	The Italian Job\\
+		81889	Terminator 2: Extreme Edition\\
+		78936	When Harry Met Sally\\
+		78892	National Lampoon's Vacation\\
+		76587	Beverly Hills Cop\\
+		76473	Office Space\\
+		75145	Air Force One\\
+		70400	Sweet Home Alabama
+	\end{itemize}
+
+\pagebreak
+\item[2.]
+
+	
+\end{itemize}
+
+\end{document}
