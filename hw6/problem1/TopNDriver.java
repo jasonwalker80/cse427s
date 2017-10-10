@@ -13,17 +13,19 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.Job;
 
 /* 
- * MapReduce jobs are typically implemented by using a driver class.
- * The purpose of a driver class is to set up the configuration for the
- * MapReduce job and to run the job.
- * Typical requirements for a driver class include configuring the input
- * and output data formats, configuring the map and reduce classes,
- * and specifying intermediate data formats.
+ * This TopNDriver is a MR driver to generate the Top N for a list
+ * of text values and Integer values. This class expects the output
+ * from another MR job such as AggregateRatings. The configuration
+ * for this MR job must define a value for N, the number of top
+ * values to return in the final list. Ex. -D N=15
  * 
  * The following is the code for the driver class:
  */
 public class TopNDriver extends Configured implements Tool {
 
+	/*
+	 * Define the main function to execute tool run with configuration
+	 */
   public static void main(String[] args) throws Exception {
 	  int exitCode = ToolRunner.run(new Configuration(), new TopNDriver(), args);
 	  System.exit(exitCode);
@@ -46,14 +48,12 @@ public class TopNDriver extends Configured implements Tool {
     Job job = new Job(getConf());
     
     /*
-     * Specify the jar file that contains your driver, mapper, and reducer.
-     * Hadoop will transfer this jar file to nodes in your cluster running
-     * mapper and reducer tasks.
+     * Specify the jar file that contains your driver:
      */
     job.setJarByClass(TopNDriver.class);
     
     /*
-     * Specify an easily-decipherable name for the job.
+     * Specify an easy to read name for the job.
      * This job name will appear in reports and logs.
      */
     job.setJobName("TopN");
@@ -71,26 +71,11 @@ public class TopNDriver extends Configured implements Tool {
     job.setMapperClass(TopNMapper.class);
     job.setReducerClass(TopNReducer.class);
 
-    /*
-     * For the word count application, the input file and output 
-     * files are in text format - the default format.
-     * 
-     * In text format files, each record is a line delineated by a 
-     * by a line terminator.
-     * 
-     * When you use other input formats, you must call the 
-     * SetInputFormatClass method. When you use other 
-     * output formats, you must call the setOutputFormatClass method.
-     */
-      
+     
     /*
      * For the topN application, the mapper's output keys and
      * values have the same data types as the reducer's output keys 
      * and values: NullWritable and Text.
-     * 
-     * When they are not the same data types, you must call the 
-     * setMapOutputKeyClass and setMapOutputValueClass 
-     * methods.
      */
     job.setMapOutputKeyClass(NullWritable.class);
     job.setMapOutputValueClass(Text.class);

@@ -7,16 +7,11 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 /* 
- * To define a reduce function for your MapReduce job, subclass 
- * the Reducer class and override the reduce method.
- * The class definition requires four parameters: 
- *   The data type of the input key (which is the output key type 
- *   from the mapper)
- *   The data type of the input value (which is the output value 
- *   type from the mapper)
- *   The data type of the output key
- *   The data type of the output value
- */   
+ * Define a sum reduce function for a MapReduce job
+ * This reducer takes a Text and IntWritable input
+ * and outputs the total occurrence of the Text argument.
+ */
+
 public class SumReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
 
   /*
