@@ -68,7 +68,7 @@ SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/
 			\end{tabular}
 		\\		
 		The number of bytes written and read from HDFS do not change because the data read from HDFS (namely the TrainingRatings dataset) is the same in both cases. They both need to read the entire set and regardless of using the Combiner or not, we get the same answer and thus the same output bytes. The bytes written and read though on the filesystem do change, and are reduced with the Combiner. This is because the Combiner reduces the amount of intermediate data produced by the mappers by collapsing all the Mapper output from a given compute node before writing the intermediate data.\\
-		Number of key-value pairs combined: 1,789 			
+		Number of key-value pairs combined: 3,192,295 - 1,789 = 3,190,506d		
 		\item[c.] We can use the SumReducer as the Combiner because:
 			\item Our reduce step is summation, which is commutative and associative
 			%\item The input data types of the Combiner and Reducer are the same (Text, IntWritable)
