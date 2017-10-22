@@ -17,29 +17,28 @@ public class IndexReducer extends Reducer<Text, Text, Text, Text> {
   public void reduce(Text key, Iterable<Text> values, Context context)
       throws IOException, InterruptedException {
 
-	  String valueList = "";
+	  StringBuffer valueList = new StringBuffer();
 	  
 	  /*
 	 * For each value in the set of values passed to us by the mapper:
 	 */
 		for (Text value : values) {
 		  
-		  /*
+			/*
 		   * Add the value and a comma to the existing list
 		   */
-			if(valueList.length() == 0){ //if first word don't append comma
-				valueList = value.toString();
+			
+			if(valueList.length() != 0){ //if first word don't append comma
+				valueList.append(",");
 			}
-			else{
-				valueList.concat(",").concat(value.toString());
-			}
+			
+			valueList.append(value.toString());
 		}
-		
 		/*
 		 * Call the write method on the Context object to emit a key
 		 * and a value from the reduce method. 
 		 */
-		context.write(key, new Text(valueList));
+		context.write(key, new Text(valueList.toString()));
     
   }
 }
