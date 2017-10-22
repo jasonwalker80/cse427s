@@ -71,6 +71,39 @@ SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/
 		% slide 25
 		\item[a.] The dual approach can be more efficient if the \#users $\gg$ \#items. Also, it can be easier to find similar items.
 		\item[b.]
+			\begin{tabular}{|c||c|c|c|c|}
+			\hline 
+				\textbf{User} & \textbf{Movie1} & \textbf{Movie2} & \textbf{Movie3} & \textbf{Movie5}\\
+			\hline
+				\textbf{user1} & 1 & 3 & 2 & \\
+				\textbf{user2} &  & 2 & 3 & 5\\
+				\textbf{user3} & 1 & 2 &  & \\
+			\hline
+			\end{tabular}
+
+			Mapper Output (pairs of movies and ratings):\\
+			((movie1,movie2), (1,3))\\
+			((movie1,movie3), (1,2))\\
+			((movie2,movie3), (3,2))\\
+			((movie2,movie3), (2,3))\\
+			((movie3,movie5), (3,5))\\
+			((movie1,movie2), (1,2))\\
+			
+			Reducer Input:\\
+			((movie1,movie2), [(1,3),(1,2)])\\ 
+			((movie1,movie3), (1,2))\\
+			((movie2,movie3), [(3,2),(2,3)])\\
+			((movie3,movie5), (3,5))\\
+			((movie1,movie2), (1,2))\\
+			
+			Reducer Output (similarity measure of movie pairs):\\
+			((movie1,movie2), .99)\\
+			((movie1,movie3), 0)\\
+			((movie1,movie5), 0)\\
+			((movie2,movie3), .92)\\
+			((movie2,movie5), 0)\\
+			((movie3,movie5), 0)\\
+			
 	\end{itemize}
 	
 \end{itemize}
