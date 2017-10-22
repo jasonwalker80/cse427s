@@ -1,0 +1,55 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.5in,includehead,includefoot]{geometry}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0pt} % no line in header area
+\lhead{Names: Bob Skowron, Jason Walker\\
+Keys: rskowron, jwalker\\
+SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/}\\}% Right header
+
+\urlstyle{same}
+\renewcommand{\labelitemiii}{$\bullet$}
+
+\begin{document}
+\begin{itemize}
+\item[1.] 
+	\begin{itemize}
+		\item[a.] The \textit{InputFormat} to use is KeyValueTextInputFormat\\
+			To get the file path, we use the context to get the current input split and then read the path and name\\
+			\textit{FileSplit fileSplit = (FileSplit)context.getInputSplit();}\\
+			\textit{String filename = fileSplit.getPath().getName();}\\
+		\item[b.] See SVN
+		\item[c.]
+	\end{itemize}
+
+\pagebreak
+\item[2.]
+	\begin{itemize}
+		\item[a.] 
+		\item[b.] 
+		\item[c.]
+	\end{itemize}
+
+\pagebreak
+\item[3.]
+	\begin{itemize}
+		\item[a.] 
+		\item[b.]
+	\end{itemize}
+	
+\end{itemize}
+
+\end{document}
