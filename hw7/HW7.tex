@@ -27,27 +27,108 @@ SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/
 \begin{itemize}
 \item[1.] 
 	\begin{itemize}
-		\item[a.] The \textit{InputFormat} to use is KeyValueTextInputFormat\\
+		\item[a.] The \textit{InputFormat} to use is KeyValueTextInputFormat. The default split is tab so no extra settings necessary.\\
+			Code to add to driver: \textit{job.setInputFormatClass(KeyValueTextInputFormat.class}\\
 			To get the file path, we use the context to get the current input split and then read the path and name\\
 			\textit{FileSplit fileSplit = (FileSplit)context.getInputSplit();}\\
 			\textit{String filename = fileSplit.getPath().getName();}\\
 		\item[b.] See SVN
-		\item[c.]
+		\item[c.] Mapper output for lines from Hamlet:\\
+			have	hamlet@282\\
+			heaven	hamlet@282\\
+			and	hamlet@282\\
+			earth	hamlet@282\\
+			there	hamlet@133\\
+			are	hamlet@133\\
+			more	hamlet@133\\
+			things	hamlet@133\\
+			in	hamlet@133\\
+			heaven	hamlet@133\\
+			and	hamlet@133\\
+			earth	hamlet@133\\
 	\end{itemize}
 
 \pagebreak
 \item[2.]
 	\begin{itemize}
-		\item[a.] 
+		\item[a.] Cosine similarity: $\frac{r_{x}^{T}\cdot r_{y}}{\parallel r_{x} \parallel \cdot \parallel r_{y} \parallel}$\\
+		Normalizing (i.e. subtracting the relevant means) gives:
+			$\frac{(r_{x} - \bar{r_{x}})^{T}\cdot (r_{y}-\bar{r_{y}})}{\parallel r_{x} - \bar{r_{x}} \parallel \cdot \parallel r_{y}-\bar{r_{y}} \parallel}$\\
+		 This is equivalent to: 
+		 	$\frac{\sum_{s \epsilon S_{xy}} (r_{xs} - \bar{r_{x}})*(r_{ys}-\bar{r_{y}})}{\sqrt{\sum_{s \epsilon S_{xy}} (r_{xs} - \bar{r_{x}})^{2}} * \sqrt{\sum_{s \epsilon S_{xy}} (r_{ys}-\bar{r_{y}})^{2}}}$\\
+		 	Which is the Pearson correlation.
 		\item[b.] 
-		\item[c.]
+			\begin{itemize}
+				\item An advantage of normalization is to remove bias. We can remove users who are overly critical (all low scores) or overly enthusiastic (all high rankings). Additionally, it improves the cosine similarity measure (now equivalent to the Pearson correlation).
+				\item Normalization requires that you compute and store the average rating for each user. This compute and storage of mean values must be performed each time the ratings change and requires pre-processing the entire set of ratings each time it changes.
+			\end{itemize}
+		\item[c.] One disadvantage of the Jaccard similarity is that it does not take into account the value of the rating. Thus, even if two users rate the exact same items with opposite ratings it would have a high Jaccard similarity ranking. To overcome this problem, we could try to eliminate the apparent similarity between movies a user rates highly and those with low scores by rounding the ratings. For instance, we could consider ratings of 3, 4, and 5 as a ``1'' and consider ratings 1 and 2 as unrated.
 	\end{itemize}
 
 \pagebreak
 \item[3.]
 	\begin{itemize}
-		\item[a.] 
+		% slide 25
+		\item[a.] The dual approach can be more efficient if the \#users $\gg$ \#items. Also, it's easier to find similar items since items typically belong to a specific genre, ex. 60's rock versus 1700's baroque. It's more common for users to like items from different genres
 		\item[b.]
+			\begin{tabular}{|c||c|c|c|c|}
+			\hline 
+				\textbf{User} & \textbf{Movie1} & \textbf{Movie2} & \textbf{Movie3} & \textbf{Movie5}\\
+			\hline
+				\textbf{user1} & 1 & 3 & 2 & \\
+				\textbf{user2} &  & 2 & 3 & 5\\
+				\textbf{user3} & 1 & 2 &  & \\
+			\hline
+			\end{tabular}
+			
+			\textbf{Job 1 - Item Co-occurrence} \\
+			Mapper Output: (user, (movie, rating))\\
+			(user1, (movie1, 1))\\
+			(user1, (movie2, 3))\\
+			(user1, (movie3, 2))\\
+			(user2, (movie2, 2))\\
+			(user2, (movie3, 3))\\
+			(user2, (movie5, 5))\\
+			(user3, (movie1, 1))\\
+			(user3, (movie2, 2))\\
+			
+			Reducer Input: (user, list\textless movie, ratings\textgreater)\\
+			(user1, [(movie1,1), (movie2, 3), (movie3, 2)])\\
+			(user2, [(movie2, 2), (movie3, 3), (movie5, 5)])\\
+			(user3, [(movie1,1), (movie2, 3)])\\
+			
+			Reducer Output: ((movie-id1, movie-id2), (ratings1, ratings2))\\
+			For movie-id1; For movie-id2 \textgreater movie-id1 \\
+			((movie1,movie2), (1,3)))\\
+			((movie1,movie3), (1,2))\\
+			((movie2,movie3), (2,3))\\
+			((movie2,movie5), (2,5))\\
+			((movie3,movie5), (3,5))\\
+			((movie1,movie2), (1,3))\\
+			  
+			\textbf{Job 2 - Item Similarity}\\
+			Mapper Output (identity)\\
+			((movie1,movie2), (1,3)))\\
+			((movie1,movie3), (1,2))\\
+			((movie2,movie3), (2,3))\\
+			((movie2,movie5), (2,5))\\
+			((movie3,movie5), (3,5))\\
+			((movie1,movie2), (1,3))\\
+			  
+			Reducer Input:\\
+			((movie1,movie2), [(1,3),(1,2)])\\ 
+			((movie1,movie3), (1,2))\\
+			((movie2,movie3), [(3,2),(2,3)])\\
+			((movie2,movie5), (2,5))\\
+			((movie3,movie5), (3,5))\\
+			
+			Reducer Output (similarity measure of movie pairs):\\
+			((movie1,movie2), 0.86)\\
+			((movie1,movie3), 0.39)\\
+			((movie2,movie3), 0.81)\\
+			((movie2,movie5), 0.49)\\
+			((movie3,movie5), 0.83)\\
+			
 	\end{itemize}
 	
 \end{itemize}
