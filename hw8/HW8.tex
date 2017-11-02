@@ -81,7 +81,7 @@ SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/
 	% slide 52/56 on the intro to spark pdf
 	\begin{itemize}
 		% also collapsing multiple RDDs into a single stage
-		\item[a.] Spark works in stages. Pipelining is a feature of Spark that when possible, Spark will optimize transformations not separated by shuffles by executing them in a single task. This allows it to skip adding another stage and it can execute those steps on a single cluster node. There are several benefits. First, no intermediate records or RDDs have to be stored. Second, it will only process the requisite transformations for the data required. We do not have to apply all transformations to all rows if they end up filtered later on.
+		\item[a.] Spark works in stages. Pipelining is a feature of Spark that when possible, Spark will optimize transformations not separated by shuffles by executing them in a single task. This allows it to skip adding another stage and it can execute those steps on a single cluster node. There are several benefits. First, the intermediate records are not saved to memory or written to disk since the entire process can be executed on a single cluster node. Secondly, because the transformations only have to be executed on a single cluster node, there is no overhead from moving the data around during a shuffle phase. This can improve performance as we have seen that the shuffle phase is often quite expensive.
 		\item[b.] Maps and filters can be pipelined together. Any transformation that does not require a shuffle of the data should be able to be pipelined.
 	\end{itemize}
 
