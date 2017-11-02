@@ -13,25 +13,39 @@
     filecolor=magenta,      
     urlcolor=cyan,
 }
-\begin{document}
+
 \pagestyle{fancy}
 \renewcommand{\labelitemiii}{$\bullet$}
-\renewcommand{\headrulewidth}{0pt}  no line in header area
+\renewcommand{\headrulewidth}{0pt}  %no line in header area
 \lhead{Names: Bob Skowron, Jason Walker\\
 Keys: rskowron, jwalker\\
-SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/}} Right header
+SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/}} %Right header
 \urlstyle{same}
 
-
+\begin{document}
 \begin{itemize}
 
 \item[1.] 
 	\begin{itemize}
-		\item[a.]
+		\item[a.] mydata.map(lambda line: line.split(' ')).filter(lambda fields: "html" in fields[6]).keyBy(lambda fields: (fields[0] + "/" + fields[2])).keys().saveAsTextFile("loudacre\textunderscore weblogs\textunderscore html")\\
+			\\
+			hadoop fs -cat loudacre\textunderscore weblogs\textunderscore html/part-00000 \text{\textbar} head -10\\
+			\\
+			3.94.78.5/69827\\
+			19.38.140.62/21475\\
+			129.133.56.105/2489\\
+			217.150.149.167/4712\\
+			209.151.12.34/45922\\
+			184.97.84.245/144\\
+			233.60.251.2/33908\\
+			160.134.139.204/51340\\
+			19.209.18.222/13392\\
+			230.220.223.28/12643\\
+
 		%hadoop fs -cat /louacre/weblogs/* | wc -l
 		\item[b.] Total lines: 1,079,891; Number of lines with HTML requests: 474,360\\
 		Code: \\
-		\textbf{Total Lines}: mydata.map(lambda line: line.split(' ')).keyBy(lambda fields: (fields{[0]} + "/" + fields{[2]})).count()\\
+		\textbf{Total Lines}: mydata.map(lambda line: line.split(' ')).keyBy(lambda fields: (fields[0] + "/" + fields[2])).count()\\
 		\textbf{Lines with HTML}: mydata.map(lambda line: line.split(' ')).filter(lambda fields: "html" in fields[6]).keyBy(lambda fields: (fields[0] + "/" + fields[2])).count()
 	\end{itemize}
 
@@ -67,8 +81,8 @@ SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/
 	% slide 52/56 on the intro to spark pdf
 	\begin{itemize}
 		% also collapsing multiple RDDs into a single stage
-		\item[a.] Pipelining = Feature of Spark that when possible, Spark will perform sequences of transformations by row so no data is stored. There are several benefits. First, no intermediate records or RDDs have to be stored. Second, it will only process the requisite transformations for the data required. We do not have to apply all transformations to all rows if they end up filtered below e.g. 
-		\item[b.] You can pipeline a map and a filter or pipeline and take or count???
+		\item[a.] Spark works in stages. Pipelining is a feature of Spark that when possible, Spark will optimize transformations not separated by shuffles by executing them in a single task. This allows it to skip adding another stage and it can execute those steps on a single cluster node. There are several benefits. First, no intermediate records or RDDs have to be stored. Second, it will only process the requisite transformations for the data required. We do not have to apply all transformations to all rows if they end up filtered later on.
+		\item[b.] Maps and filters can be pipelined together. Any transformation that does not require a shuffle of the data should be able to be pipelined.
 	\end{itemize}
 
 \end{itemize}
