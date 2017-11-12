@@ -1,0 +1,82 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.5in,includehead,includefoot]{geometry}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+
+\pagestyle{fancy}
+\renewcommand{\labelitemiii}{$\bullet$}
+\renewcommand{\headrulewidth}{0pt}  %no line in header area
+\lhead{Names: Bob Skowron, Jason Walker\\
+Keys: rskowron, jwalker\\
+SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/}} %Right header
+\urlstyle{same}
+
+\begin{document}
+\begin{itemize}
+
+\item[1.] 
+	\begin{itemize}
+		\item[a.]
+		\item[b.]
+		\item[c.]
+	\end{itemize}
+
+\pagebreak
+\setlength{\headsep}{5pt}
+\item[2.]
+	\begin{itemize}
+		\item[a.]
+		\item[b.]
+		\item[c.]
+		\item[d.]
+		\item[e.]
+		\item[f.]
+	\end{itemize}
+	
+\pagebreak
+\setlength{\headsep}{5pt}
+\item[3.]
+	\begin{itemize}
+		\item[a.] See SVN
+		\item[b.] \textit{spark-submit CountJPGs.py /loudacre/weblogs}\\
+		Number of JPGs: 64,978\\
+		The Driver program and processing are done locally. The result is stored locally.
+		\item[c.] \textit{spark-submit --master yarn-client CountJPGs.py /loudacre/weblogs}\\
+		The Driver program is run locally. The processing is done on the cluster. The result is stored in HDFS.
+		\item[d.] 1 stage and 311 tasks were executed
+		\item[e.] \textit{spark-submit --master yarn-cluster CountJPGs.py /loudacre/weblogs}\\
+		The Driver program and processing are completed on the cluster. The result is stored in HDFS.
+	\end{itemize}
+	
+\pagebreak
+\setlength{\headsep}{5pt}
+\item[4.]
+	\begin{itemize}
+		\item[a.]
+		\item[b.]
+		\item[c.]
+		\item[d.]
+	\end{itemize}
+
+\pagebreak
+\setlength{\headsep}{5pt}
+\item[5.]
+	\begin{itemize}
+		\item[a.]
+		\item[b.]
+	\end{itemize}
+
+\end{itemize}
+
+\end{document}
