@@ -63,18 +63,33 @@ SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/
 \setlength{\headsep}{5pt}
 \item[4.]
 	\begin{itemize}
-		\item[a.]
-		\item[b.]
-		\item[c.]
+		\item[a.] To generate a sample of the data you can use the unix commands head or tail to create a file with a specified subset of data. Using PIG, you could load the data and then write out a sample file with LIMIT and STORE. Both of these would only take the first or last n records. If you wanted to generate a more representative sample, you could use PIG with SAMPLE or unix with shuf.\\
+		
+		It is much faster to test PIG scripts with a local subset since PIG will generate a MapReduce job based on the script. If you run the script on the cluster with the full set of data, this would be equivalent to running an entire MR job on the data which could take a long time.
+		\item[b.] %hadoop fs -cat /dualcore/ad_data1/part* | head -100 \textgreater test_ad_data.txt
+		%pig -x local low_cost_sites.pig
+		\item[c.] 
+			(diskcentral.example.com,68)\\
+			(megawave.example.com,96)\\
+			(megasource.example.com,100)\\
+			(salestiger.example.com,141)
+		%pig low_cost_sites.pig	
 		\item[d.]
+			(bassoonenthusiast.example.com,1246)\\
+			(grillingtips.example.com,4800)\\
+			(footwear.example.com,4898)\\
+			(cofeenews.example.com,5106)
 	\end{itemize}
 
 \pagebreak
 \setlength{\headsep}{5pt}
 \item[5.]
 	\begin{itemize}
-		\item[a.]
+		\item[a.] Will copy in later
 		\item[b.]
+			(TABLET,3193033)\\
+			(DUALCORE,2888747)\\
+			(DEAL,2717098)
 	\end{itemize}
 
 \end{itemize}
