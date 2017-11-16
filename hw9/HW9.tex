@@ -7,6 +7,7 @@
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage{fancyhdr}
+\usepackage{verbatim}
 \hypersetup{
     colorlinks=true,
     linkcolor=blue,
@@ -27,21 +28,90 @@ SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/
 
 \item[1.] 
 	\begin{itemize}
-		\item[a.]
-		\item[b.]
+		\item[a.] Define the transition matrix M:\\
+		\begin{tabular}{c|c c c}
+			 & \textbf{a} & \textbf{b} & \textbf{c} \\
+			\hline
+				\textbf{a} & .333 & .333 & .333\\
+				\textbf{b} & .5 & 0 & .5\\
+				\textbf{c} & 0 & .5 & .5\\
+		\end{tabular}
+		Transpose M and multiply by v = $[.333 .333. 333]^{T}$\\
+		Iterating this multiplication gives:\\
+		\begin{tabular}{c|c c c c c c c c c c c c c c c c}
+			 & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{8} & \textbf{9} & \textbf{10}\\
+			\hline
+				\textbf{a} &0.278&0.231&0.235&0.230&0.231&0.231&0.231&0.231&0.231&0.231\\
+				\textbf{b} &0.278&0.315&0.304&0.309&0.307&0.308&0.308&0.308&0.308&0.308\\
+				\textbf{c} &0.444&0.454&0.461&0.461&0.462&0.461&0.462&0.462&0.462&0.462\\
+		\end{tabular}
+		\item[b.] Here we introduce $\beta = .8$. The matrix M and vector v from above still apply.\\
+		Iterating, we get:\\
+		\begin{tabular}{c|c c c c c c c c c c c c c c c c}
+			 & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{8} & \textbf{9} & \textbf{10}\\
+			\hline
+				\textbf{a} &0.289&0.259&0.261&0.259&0.259&0.259&0.259&0.259&0.259&0.259\\
+				\textbf{b} &0.289&0.313&0.307&0.309&0.309&0.309&0.309&0.309&0.309&0.309\\
+				\textbf{c} &0.422&0.428&0.432&0.432&0.432&0.432&0.432&0.432&0.432&0.432\\
+		\end{tabular}
 		\item[c.]
+			\begin{itemize}
+				\item[a.]
+					\begin{tabular}{c c c}
+			 			\textbf{Source} & \textbf{Degree} & \textbf{Destinations}\\
+						\hline
+						A & 3 & B,C,D \\
+						B & 2 & A,D \\
+						C & 1 & E \\
+						D & 2 & B,C \\
+					\end{tabular}
+				\item[b.]
+					\begin{tabular}{c c c}
+			 			\textbf{Source} & \textbf{Degree} & \textbf{Destinations}\\
+						\hline
+						A & 3 & A,B,C \\
+						B & 2 & A,B \\
+						C & 2 & B,C \\
+					\end{tabular}\\
+				Using 4-byte integers for coordinates of an element and an 8-byte double for the value, then we need 16 bytes per nonzero entry. If we list the nonzero entries by column, however, we can thus represent a column by one integer for the out-degree, and one integer per nonzero entry in that column, giving the row number where that entry is located. This is only 4 bytes per nonzero entry and 4 bytes for the column.
+			\end{itemize}
 	\end{itemize}
 
 \pagebreak
 \setlength{\headsep}{5pt}
 \item[2.]
 	\begin{itemize}
-		\item[a.]
-		\item[b.]
-		\item[c.]
-		\item[d.]
-		\item[e.]
-		\item[f.]
+		\item[a.] M = RDD of (columnId, (rowId, value)); v = RDD of (id, value)\\
+			mmult = join v to M\\
+				flatMap to get (rowId, M\_value * v\_value)\\ 
+				reduceByKey (add up values)
+		\item[b.] Stages are operations that can run on the same data partitioning in parallel across executors/nodes. Tasks within a stage are operations executed by one executor/node that are pipelined together.\\
+Stage1: join, flatMap Stage2: reduceByKey
+		\item[c.] RDDs:\\
+		M =\{(1, (1, 16)), (2, (1, 2)), (3, (1, 3)), (4, (1, 13))\\
+			(1, (2, 5)), (2, (2, 11)), (3, (2, 10)), (4, (2, 8))\\
+			(1, (3, 9)), (2, (3, 7)), (3, (3, 6)), (4, (3, 12))\\
+			(1, (4, 4)), (2, (4, 14)), (3, (4, 15)), (4, (4, 1))\}\\
+		v = \{(1, 1), (2, 2), (3, 3), (4, 4)\}
+		\item[d.] Results:\\
+		join: \{((1, (1, 16)), (1, 1)), ((2, (1, 2)), (2, 2)), ((3, (1, 3)), (3, 3)), ((4, (1, 13)), (4, 4))
+			((1, (2, 5)) , (1, 1)), ((2, (2, 11)) , (2, 2)), ((3, (2, 10)) , (3, 3)), ((4, (2, 8)) , (4, 4))
+			((1, (3, 9)) , (1, 1)), ((2, (3, 7)) , (2, 2)), ((3, (3, 6)) , (3, 3)), ((4, (3, 12)) , (4, 4))
+			((1, (4, 4)) , (1, 1)), ((2, (4, 14)) , (2, 2)), ((3, (4, 15)) , (3, 3)), ((4, (4, 1)) , (4, 4))\}\\
+		flatMap: \{(1,16*1),(1,2*2),(1,3*3),(1,13*4)\\
+			(2,5*1),(2,11*2),(2,10*3),(2,8*4)\\
+			(3,9*1),(3,7*2),(3,6*3),(3,12*4)\\
+			(4,4*1),(4,14*2),(4,15*3),(4,1*4)\}\\
+		reduceByKey:\{(1,81)\\
+			(2,89)\\
+			(3,89)\\
+			(4,81)\}
+		\item[e.]Input = (m * n) + n\\
+			join = (m*2n)\\
+			flatMap = (m*n)\\
+			reduceByKey = (n)\\
+			Total = 2(m*n)+ (m*2n)+2n
+		\item[f.] A potential memory bottleneck could occur during the re-partition between the flatMap and the reduceByKey.
 	\end{itemize}
 	
 \pagebreak
@@ -51,12 +121,12 @@ SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/
 		\item[a.] See SVN
 		\item[b.] \textit{spark-submit CountJPGs.py /loudacre/weblogs}\\
 		Number of JPGs: 64,978\\
-		The Driver program and processing are done locally. The result is stored locally.
+		The Driver program and processing are done locally. The result (print statement) is output to the command line.
 		\item[c.] \textit{spark-submit --master yarn-client CountJPGs.py /loudacre/weblogs}\\
-		The Driver program is run locally. The processing is done on the cluster. The result is stored in HDFS.
+		The Driver program is run locally. The processing is done on the cluster. The result (print statement) is output to the command line.
 		\item[d.] 1 stage and 311 tasks were executed
 		\item[e.] \textit{spark-submit --master yarn-cluster CountJPGs.py /loudacre/weblogs}\\
-		The Driver program and processing are completed on the cluster. The result is stored in HDFS.
+		The Driver program and processing are completed on the cluster. The result (print statement) is output to a log file on the cluster.
 	\end{itemize}
 	
 \pagebreak
@@ -66,7 +136,7 @@ SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/
 		\item[a.] To generate a sample of the data you can use the unix commands head or tail to create a file with a specified subset of data. Using PIG, you could load the data and then write out a sample file with LIMIT and STORE. Both of these would only take the first or last n records. If you wanted to generate a more representative sample, you could use PIG with SAMPLE or unix with shuf.\\
 		
 		It is much faster to test PIG scripts with a local subset since PIG will generate a MapReduce job based on the script. If you run the script on the cluster with the full set of data, this would be equivalent to running an entire MR job on the data which could take a long time.
-		\item[b.] %hadoop fs -cat /dualcore/ad_data1/part* | head -100 \textgreater test_ad_data.txt
+		\item[b.] \textit{hadoop fs -cat /dualcore/ad\_data1/part* \text{\textbar} head -100 \textgreater  test\_ad\_data.txt}
 		%pig -x local low_cost_sites.pig
 		\item[c.] 
 			(diskcentral.example.com,68)\\
@@ -85,7 +155,7 @@ SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/
 \setlength{\headsep}{5pt}
 \item[5.]
 	\begin{itemize}
-		\item[a.] Will copy in later
+		\item[a.] Included later 
 		\item[b.]
 			(TABLET,3193033)\\
 			(DUALCORE,2888747)\\
@@ -93,5 +163,13 @@ SVN: jwalker: \url{https://svn.seas.wustl.edu/repositories/jwalker/cse427s_fl17/
 	\end{itemize}
 
 \end{itemize}
+
+\pagebreak
+PIG script for Problem 4, parts (c) and (d)\\
+\verbatiminput{low_cost_sites.pig}
+
+\pagebreak
+PIG script for Problem 5, part (a)\\
+\verbatiminput{high_cost_keywords.pig}
 
 \end{document}
