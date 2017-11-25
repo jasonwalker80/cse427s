@@ -1,6 +1,5 @@
 import sys
 import re
-import os
 from pyspark import SparkContext
 
 #NOTE: This file should be run as a Spark application on Local Mode only
