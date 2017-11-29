@@ -14,18 +14,11 @@ def toCSVLine(line):
 if __name__ == "__main__":
     # check number of command line arguments passed in
     if len(sys.argv) != 1 :
-      print >> sys.stderr, "Usage: WordCount <file>"
+      print >> sys.stderr, "Usage: step1 <file>"
       exit (-1)
 
     #create SparkContext object
     sc = SparkContext()
-
-    #define all regexex first
-    valid_regex = re.compile(r"\d{4}-\d{2}-\d{2}:\d{2}:\d{2}:\d{2}[,|][\w\s.]+[,|]\w{8}-\w{4}-\w{4}-\w{4}-\w{12}[,|]([\d]+|enabled|disabled)[,|]([\d]+|enabled|disabled)[,|]([\d]+|enabled|disabled)[,|]([\d]+|enabled|disabled)[,|]([\d]+|enabled|disabled)[,|]([\d]+|enabled|disabled)[,|]([\d]+|enabled|disabled)[,|]([\d]+|enabled|disabled)[,|]([\d]+|enabled|disabled)[,|]([-]{0,1}[\d]{1,3}[.][\d]+|0)[,|]([-]{0,1}[\d]{1,3}[.][\d]+|0)")
-    location_regex = re.compile(r"([-]{0,1}[\d]{1,3}[.][\d]+|0)")
-    date_regex = re.compile(r"\d{4}-\d{2}-\d{2}:\d{2}:\d{2}:\d{2}")
-    model_regex = re.compile(r"[\w\s.]+")
-    deviceID_regex = re.compile(r"\w{8}-\w{4}-\w{4}-\w{4}-\w{12}")
 
     #Load file
     # Filter out invalid records
@@ -34,14 +27,15 @@ if __name__ == "__main__":
     # Filter out the records where (longitude, latitude) = (0,0)
     # Map the same but with Model Name and Manufacturer name split so that the RDD in the following format: (longitude, latitude, date, manufacturer, model, device ID )
     data = sc.textFile("file:/home/training/training_materials/dev1/data/devicestatus.txt")\
-      .filter(lambda line: valid_regex.match(line))\
-      .map(lambda line: (str((location_regex.findall(line))[-2]), str((location_regex.findall(line))[-1]), str(date_regex.findall(line)), str((model_regex.findall(line))[6]), str(deviceID_regex.findall(line)) ) )\
-      .map(lambda x: (float(x[0]), float(x[1]), x[2].replace("[u'","").replace("']",""), x[3], x[4].replace("[u'","").replace("']","") ) )\
-      .filter(lambda x: ((x[0]==0)!=(x[1]==0)) or ((x[0]!=0) and (x[1]!=0)) )\
-      .map(lambda x: (x[0], x[1], x[2], x[3].split(" ")[0], x[3].split(" ")[1], x[4]) )
-    data = data.map(lambda line: toCSVLine(line))
+      .map(lambda line: (line[19],line))\
+      .map(lambda lsplit: lsplit[1].split(lsplit[0]))\
+      .filter(lambda rcount: len(rcount) == 14)\
+      .map(lambda vals: (float(vals[12]), float(vals[13]),vals[0], vals[1], vals[3]))\
+      .filter(lambda latlong: (latlong[0] != 0 and latlong[1] != 0))\
+      .map(lambda manu: (manu[0], manu[1], manu[2], manu[3].split(" ")[0], manu[3].split(" ")[1], manu[4]))\
+      .map(lambda line: toCSVLine(line))
 
     #Save file
     data.saveAsTextFile("hdfs:/loudacre/devicestatus_etl")
     #Stop the SparkContext object
-    sc.stop()
+sc.stop()
