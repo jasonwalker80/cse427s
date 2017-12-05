@@ -31,8 +31,8 @@ There are 3 parts to the implementation of the k-means algorithm
 3. Actual k-means algorithm
 """
 if __name__ == "__main__":
-	if len(sys.argv) != 3:
-	        print >> sys.stderr, "Usage: k_means <input><output>"
+	if len(sys.argv) != 4:
+	        print >> sys.stderr, "Usage: k_means <input><output for cluster#,point pair><ouput for centroid_list>"
 	        exit (-1)
 
 	#create SparkContext object
@@ -64,12 +64,15 @@ if __name__ == "__main__":
 	clusters = KMeans.train(data, k, initializationMode="random")
 	clusters.save(sc, sys.argv[2])
 
-	#VERSION 1: Interpretation to first assign everything to a cluster and then calculate new centroid rather than calculating new centroid after a single addition to the cluster
+	#Interpretation to first assign every point to a cluster and then calculate new centroid rather than calculating new centroid after a single addition to the cluster
 	centroid_list = list()
-	N = data.count()
 	for i in range (0,k):
-		centroid_list.append() #How to exactly append points likely to be in different clusters?
+		#takeSample(withReplacement, number) is a spark function that returns some subset of RDD in a list
+		centroid_list.append(data.takeSample(False,1)) 
 	# Could probably write some function that takes in some measure of geographical scale as parameter
+	#store centroid_list in RDD to output to HDFS
+	centroids_RDD = sc.parallelize(centroid_list)
+	#instead of randomly picking the initial centroids
 	
 	#First iteration outside the loop
 	# map (K,V) = ( cluster #, (lat, long) )
@@ -79,28 +82,41 @@ if __name__ == "__main__":
 	convergeDist = 0.1
 	while exit is False:
 		#create new RDD to store sums of RDDs
-		sums = data.map(lambda line: (line, 1) )\
+		#map (K,V) = [ cluster # ,(point, 1)]
+		#reduceByKey (sumReducer) to produce (K,V) = [cluster #, ( pointSum ,number of points in cluster = N) ]
+			# where pointSum = (Sum of all latitudes in a cluster = SumLat, Sum of all longitudes in a cluster = SumLong)
+		#map (K,V) = [cluster #, new_centroid ], where new_centroid = (SumLat/N,SumLong/N)
+		#sort by cluster number in ascending order
+		#map (V) = new_centroid
+		#NOTE: the size of this RDD = k, therefore we can collect(), whose resulting list's indexes will correspond to cluster number
+		sums = data.map(lambda cluster,p: (cluster, (p, 1)) )\
 			.reduceByKey(add)\
-			.map(lambda cluster,sums,N: (cluster, (sums[0]/N,sums[1]/N)) )\
+			.map(lambda cluster,sums: (cluster, (sums[0][0]/sums[1],sums[0][1]/sums[1] )) )\
 			.sortByKey(True)\
 			.map(lambda cluster,new_centroid: new_centroid)
-		#Check for convergence
+		#Get new centroid list
 		new_centroid_list = sums.collect()
+		#Check for convergence
 		converges = True
+		#For each new centroid, see if the distance btw old centroid and new one is below 0.1 (or if it converged)
+		#If all centroids have converged, then stop the iterations
 		for i in range (0,k):
 			if converges is True and EuclideanDistance(new_centroid_list[i],centroid_list[i]) < convergeDist:
 				converges = True
 			else:
 				converges = False
-
+		#If converged exit loop, otherwise continue
 		if converges is True:
 			exit = True
 		else:
 			centroid_list = new_centroid_list
-		# If not converging, do another iteration for : map (K,V) = ( cluster #, (lat, long) )
-		data = data.map(lambda cluster,p: (closestPoint(p,centroid_list), p) )	
+			# If not converging, do another iteration for : map (K,V) = ( cluster #, (lat, long) )
+			data = data.map(lambda cluster,p: (closestPoint(p,centroid_list), p) )	
+			centroids_RDD = sc.parallelize(centroid_list)
+			continue
 
 	#save file to HDFS: provide output path
 	data.saveAsTextFile(sys.argv[2])
+	centroids_RDD.saveAsTextFile(sys.argv[3])
 	#Stop SparkContext
 	sc.stop()
