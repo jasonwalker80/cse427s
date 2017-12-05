@@ -63,23 +63,8 @@ if __name__ == "__main__":
 	# USING a Package:
 	clusters = KMeans.train(data, k, initializationMode="random")
 	clusters.save(sc, sys.argv[2])
-	#ATTEMP to make my own version w/out using a package (either version 1 or version 2 is a misinterpretted version, not sure which at this point)
-	#VERSION 1
-	centroid_list = list()
-	sums = list()
-	Ns = list()
-	for i in range (0,k):
-		centroid_list.append() #How to exactly append points likely to be in different clusters?
-		sums.append()
-		Ns.append(1)
-	# Could probably write some function that takes in some measure of geographical scale as parameter
-	# QUESTION: How to change centroid_list after 1 point has been assigned a cluster
-	#	map (K,V) = (cluster #, (lat,long) ) and update centroid_list
-	# Does this even work? anyways, the idea is to do the operations immediately after adding a point to a cluster , and before moving on to the next point
-	data = data.map(lambda p: index=closestPoint(p,centroid_list), sums[index]=addPoints(p,sums[index]), Ns[index]=Ns[index]+1, centroid_list[index]=sums[index]/Ns[index], (index ,p))\
-		.persist()
 
-	#VERSION 2: Interpretation to first assign everything to a cluster and then calculate new centroid rather than calculating new centroid after a single addition to the cluster
+	#VERSION 1: Interpretation to first assign everything to a cluster and then calculate new centroid rather than calculating new centroid after a single addition to the cluster
 	centroid_list = list()
 	N = data.count()
 	for i in range (0,k):
