@@ -19,7 +19,7 @@ def GreatCircleDistance(from_point, to_point):
 def closestPoint(p, k_list):
 	distances = list()
 	for centroid in k_list:
-		distances.append(EuclideanDistance(centroid,p))
+		distances.append(GreatCircleDistance(centroid,p))
 	return distances.index(min(distances))
 
 """
@@ -101,11 +101,11 @@ if __name__ == "__main__":
 		#For each new centroid, see if the distance btw old centroid and new one is below 0.1 (or if it converged)
 		#If all centroids have converged, then stop the iterations
 		for i in range (0,k):
-			if converges is True and EuclideanDistance(new_centroid_list[i],centroid_list[i]) < convergeDist:
+			if converges is True and GreatCircleDistance(new_centroid_list[i],centroid_list[i]) < convergeDist:
 				converges = True
 			else:
 				converges = False
-		#If converged exit loop, otherwise continue
+		#If converged, exit loop, otherwise continue
 		if converges is True:
 			exit = True
 		else:
@@ -114,7 +114,22 @@ if __name__ == "__main__":
 			data = data.map(lambda cluster,p: (closestPoint(p,centroid_list), p) )	
 			centroids_RDD = sc.parallelize(centroid_list)
 			continue
+	
+	# Transform (cluster #, (lat, long) ) --> (cluster #, lat_of_centroid, long_of_centroid, radius_of_cluster (= max_distance) ,distance_from_centroid_to_point, lat, long)
+	#	Step 1: It's difficult to get the masximum distance (=radius) of each cluster. Let's start by creating some new RDD = (cluster, distance_from_centroid_to_point)
+	intermerdiate_RDD = data.map(lambda cluster,p: (cluster, GreatCircleDistance(p,centroid_list[(int) cluster]) ))
+	#	Step 2: Create k new RDDs (in a list of RDDs) by filtering out by cluster number so each new RDD only contains distances for 1 cluster
+	maxDistances = list ()
+	for i in range (0,k):
+		maxDistances.append(intermerdiate_RDD.filter(lambda cluster,distance: (cluster==i) ))
+	#	Step 3: Sort By V = distances
+		maxDistances[i] = maxDistances[i].sortBy(lambda line: line[1])
+	#	Step 4: Take only the first element of the RDD and store them to a list of maximum distances in order of the cluster number
+		maxDistances[i] = maxDistances[i].take(1)[0]
 
+	#	Step 5: data = data.map (cluster #, lat_of_centroid, long_of_centroid, radius_of_cluster (= max_distance), distance_from_centroid_to_point, lat, long)
+	data = data.map (lambda cluster, p: (cluster, centroid_list[(int) cluster][0], centroid_list[(int) cluster][1], maxDistances[(int) cluster], GreatCircleDistance(p,centroid_list[(int) cluster]), p[0], p[1]) )\
+		
 	#save file to HDFS: provide output path
 	data.saveAsTextFile(sys.argv[2])
 	centroids_RDD.saveAsTextFile(sys.argv[3])
