@@ -6,7 +6,29 @@ from pyspark import SparkContext
 
 #To compute new centroids
 def addPoints(p1,p2):
-	return (p1[0]+p2[0], p1[1]+p2[1])
+	# we need to be careful here, if we go over +-180/90 we need to restart
+ 	add_lat = p1[0] + p2[0] 
+ 	add_lon = p1[1] + p2[1]
+ 	
+ 	# compute new latitude
+ 	if add_lat > 90:
+ 		lat = 90 - (add_lat % 90) #if we go over 90 (N pole) we count back down
+ 		add_lon += 180 # we also just moved around the globe so need to move longitude
+ 	elif add_lat < -90:
+ 		lat = -((p1[0] + p2[0]) % 90) # go over S pole, count back down but negative
+ 		add_lon += 180 # also go around the world longitude
+ 	else:
+ 		lat = add_lat
+ 		
+ 	# compute new longitude
+ 	if add_lon > 180:
+ 		add_lon = -180 + (add_lon % 180) # start counting down from -180
+ 	elif add_lon < -180:
+ 		add_lon = 180 + (add_lon % -180) # count down from 180
+ 	else:
+ 		lon = add_lon
+ 		
+ 	return (lat, lon)
 
 def EuclideanDistance(from_point, to_point):
 	return sqrt( ((to_point[0]-from_point[0])**2) + ((to_point[1]-from_point[1])**2) )
@@ -87,6 +109,7 @@ if __name__ == "__main__":
 		#NOTE: the size of this RDD = k, therefore we can collect(), whose resulting list's indexes will correspond to cluster number
 		sums = data.map(lambda line: (line[0], (line[1], 1)) )\
 			.reduceByKey(lambda line1,line2: (line1[0]+line2[0],line1[1]+line2[1],line1[2]+line2[2]) )\
+			# or .reduceByKey (lambda line1, line2: (addPoints(line1[0:1], line2[0:1]),line1[2]+line2[2]) )
 			.map(lambda line: (line[0], (line[1][0]/line[1][2],line[1][1]/line[1][2] )) )\
 			.sortByKey(True)\
 			.map(lambda line: line[1])\
