@@ -2,9 +2,7 @@ import sys
 import re
 from geopy.distance import great_circle
 from math import sqrt
-from numpy import array
 from pyspark import SparkContext
-from pyspark.mllib.clustering import KMeans, KMeansModel
 
 #To compute new centroids
 def addPoints(p1,p2):
@@ -25,7 +23,7 @@ def closestPoint(p, k_list):
 """
 K-means Algorithm Implementation
 
-There are 3 parts to the implementation of the k-means algorithm
+There are 3 parts to the implementation
 1. Initial Tranformation to get RDDs of coordinate points
 2. Figure out k through either logarithmic approach(may not need this part) or copying pre-determined value
 3. Actual k-means algorithm
@@ -42,7 +40,7 @@ if __name__ == "__main__":
 	#Transform into RDD containing location coordinates (latitude, longitude) in an array
 	data = sc.textfile(sys.argv[1])\
 		#The operations to transform into pair RDD depend on the format of that data
-		.map(lambda line: array([float(x) for x in line.split(',') ]) )\
+		.map(lambda line: ())\
 		.distinct()\
 		.persist()
 
@@ -60,9 +58,6 @@ if __name__ == "__main__":
 	# 1. Pick initial k points (store in a list)
 	k = 5 #Pick k either determined by PART 2 or pre-determined
 	# 2. For remaining p not in centroid_list, add to cluster with closest centroid
-	# USING a Package:
-	clusters = KMeans.train(data, k, initializationMode="random")
-	clusters.save(sc, sys.argv[2])
 
 	#Interpretation to first assign every point to a cluster and then calculate new centroid rather than calculating new centroid after a single addition to the cluster
 	centroid_list = list()
@@ -76,7 +71,8 @@ if __name__ == "__main__":
 	
 	#First iteration outside the loop
 	# map (K,V) = ( cluster #, (lat, long) )
-	data = data.map(lambda p: (closestPoint(p,centroid_list), p) )	
+	data = data.map(lambda p: (closestPoint(p,centroid_list), p) )\
+		.persist()
 	#Run iterations until convergence
 	stop = False
 	convergeDist = 0.1
@@ -93,7 +89,8 @@ if __name__ == "__main__":
 			.reduceByKey(lambda line1,line2: (line1[0]+line2[0],line1[1]+line2[1],line1[2]+line2[2]) )\
 			.map(lambda line: (line[0], (line[1][0]/line[1][2],line[1][1]/line[1][2] )) )\
 			.sortByKey(True)\
-			.map(lambda line: line[1])
+			.map(lambda line: line[1])\
+			.persist()
 		#Get new centroid list
 		new_centroid_list = sums.collect()
 		#Check for convergence
@@ -111,24 +108,24 @@ if __name__ == "__main__":
 		else:
 			centroid_list = new_centroid_list
 			# If not converging, do another iteration for : map (K,V) = ( cluster #, (lat, long) )
-			data = data.map(lambda line: (closestPoint(line[1],centroid_list), line[1]) )	
+			data = data.map(lambda line: (closestPoint(line[1],centroid_list), line[1]) )\
+				.persist()
 			centroids_RDD = sc.parallelize(centroid_list)
+			centroids_RDD.persist()
 			continue
 	
 	# Transform (cluster #, (lat, long) ) --> (cluster #, lat_of_centroid, long_of_centroid, radius_of_cluster (= max_distance) ,distance_from_centroid_to_point, lat, long)
 	#	Step 1: It's difficult to get the masximum distance (=radius) of each cluster. Let's start by creating some new RDD = (cluster, distance_from_centroid_to_point)
-	intermerdiate_RDD = data.map(lambda line: (line[0], GreatCircleDistance(line[1],centroid_list[(int) line[0]]) ))
-	#	Step 2: Create k new RDDs (in a list of RDDs) by filtering out by cluster number so each new RDD only contains distances for 1 cluster
+	intermerdiate_RDD = data.map(lambda line: (line[0], GreatCircleDistance(line[1],centroid_list[line[0]]) ))
+	#	Step 2: Create a new RDD for each cluster by filtering out by cluster number so each new RDD only contains distances for 1 cluster and sort By V = disntaces
 	maxDistances = list ()
 	for i in range (0,k):
-		maxDistances.append(intermerdiate_RDD.filter(lambda line: (line[0]==i) ))
-	#	Step 3: Sort By V = distances
-		maxDistances[i] = maxDistances[i].sortBy(lambda line: line[1])
-	#	Step 4: Take only the first element of the RDD and store them to a list of maximum distances in order of the cluster number
-		maxDistances[i] = maxDistances[i].take(1)[0]
+		cluster_RDD = intermerdiate_RDD.filter(lambda line: (line[0]==i)).sortBy(lambda line: line[1], False)
+	#	Step 3: Take only the first element of the RDD and store them to a list of maximum distances in order of the cluster number
+		maxDistances[i] = cluster_RDD.take(1)[0]
 
-	#	Step 5: data = data.map (cluster #, lat_of_centroid, long_of_centroid, radius_of_cluster (= max_distance), distance_from_centroid_to_point, lat, long)
-	data = data.map (lambda line: (line[0], centroid_list[(int) line[0]][0], centroid_list[(int) line[0]][1], maxDistances[(int) line[0]], GreatCircleDistance(line[1],centroid_list[(int) line[0]]), line[1][0], line[1][1]) )\
+	#	Step 4: data = data.map (cluster #, lat_of_centroid, long_of_centroid, radius_of_cluster (= max_distance), distance_from_centroid_to_point, lat, long)
+	data = data.map (lambda line: (line[0], centroid_list[line[0]][0], centroid_list[(line[0]][1], maxDistances[line[0]], GreatCircleDistance(line[1],centroid_list[line[0]]), line[1][0], line[1][1]) )\
 		
 	#save file to HDFS: provide output path
 	data.saveAsTextFile(sys.argv[2])
