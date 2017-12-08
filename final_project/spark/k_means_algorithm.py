@@ -6,29 +6,24 @@ from pyspark import SparkContext
 
 #To compute new centroids
 def addPoints(p1,p2):
-	# we need to be careful here, if we go over +-180/90 we need to restart
- 	add_lat = p1[0] + p2[0] 
- 	add_lon = p1[1] + p2[1]
- 	
- 	# compute new latitude
- 	if add_lat > 90:
- 		lat = 90 - (add_lat % 90) #if we go over 90 (N pole) we count back down
- 		add_lon += 180 # we also just moved around the globe so need to move longitude
- 	elif add_lat < -90:
- 		lat = -((p1[0] + p2[0]) % 90) # go over S pole, count back down but negative
- 		add_lon += 180 # also go around the world longitude
- 	else:
- 		lat = add_lat
- 		
- 	# compute new longitude
- 	if add_lon > 180:
- 		add_lon = -180 + (add_lon % 180) # start counting down from -180
- 	elif add_lon < -180:
- 		add_lon = 180 + (add_lon % -180) # count down from 180
- 	else:
- 		lon = add_lon
- 		
- 	return (lat, lon)
+	# convert to radians
+	(p1_lat, p1_lon) = (math.radians(p1[0]), math.radians(p1[1]))
+	(p2_lat, p2_lon) = (math.radians(p2[0]), math.radians(p2[1]))
+	
+	# calculate cartesian coordinates
+	(p1_x, p1_y, p1_z) = (math.cos(p1_lat) * math.cos(p1_lon), math.cos(p1_lat) * math.sin(p1_lon), math.sin(p1_lat))
+	(p2_x, p2_y, p2_z) = (math.cos(p2_lat) * math.cos(p2_lon), math.cos(p2_lat) * math.sin(p2_lon), math.sin(p2_lat))
+	
+	# add points
+	(add_x, add_y, add_z) = (p1_x + p2_x, p1_y + p2_y, p1_z + p2_z)
+
+	# convert to spherical
+	add_lon = math.atan2(add_y, add_x)
+	r = math.sqrt(add_x**2 + add_y**2)
+	add_lat = math.atan2(add_z, r)
+	
+	# convert back to degrees
+	return (math.degrees(add_lat), math.degrees(add_lon))
 
 def EuclideanDistance(from_point, to_point):
 	return sqrt( ((to_point[0]-from_point[0])**2) + ((to_point[1]-from_point[1])**2) )
