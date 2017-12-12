@@ -4,7 +4,7 @@ import math
 from pyspark import SparkContext
 
 #To compute new centroids
-def getCartesianCoordiantes(coords):
+def getCartesianCoordinates(coords):
     # convert to radians
     (rad_lat, rad_lon) = (math.radians(coords[0]), math.radians(coords[1]))
 
@@ -31,19 +31,16 @@ def EuclideanDistance(from_point, to_point):
 
 # logic copied from https://www.movable-type.co.uk/scripts/latlong.html
 def GreatCircleDistance(from_point, to_point):
-    if method != "geopy":
-	    R = 6371 #kilometers
-	    from_phi = math.radians(from_point[0])
-	    to_phi = math.radians(to_point[0])
-	    delta_phi = math.radians(to_point[0] - from_point[0])
-	    delta_lambda = math.radians(to_point[1] - from_point[1])
-	
-	    a = math.sin(delta_phi/2) * math.sin(delta_phi/2) +	math.cos(from_phi) * math.cos(to_phi) *	math.sin(delta_lambda/2) * math.sin(delta_lambda/2)
-	    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
-	
-	    return R * c
-    else:
-	    return 0
+    R = 6371 #kilometers
+    from_phi = math.radians(from_point[0])
+    to_phi = math.radians(to_point[0])
+    delta_phi = math.radians(to_point[0] - from_point[0])
+    delta_lambda = math.radians(to_point[1] - from_point[1])
+
+    a = math.sin(delta_phi/2) * math.sin(delta_phi/2) +	math.cos(from_phi) * math.cos(to_phi) *	math.sin(delta_lambda/2) * math.sin(delta_lambda/2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+
+    return R * c
 
 
 def CalculateDistance(from_point, to_point, measure):
@@ -60,6 +57,12 @@ def closestPoint(p, k_list, dist_meas):
 	    distances.append(CalculateDistance(centroid,p,dist_meas))
     return distances.index(min(distances))
 
+def closestDistance(p, k_list, dist_meas):
+    distances = list()
+    for centroid in k_list:
+	    distances.append(CalculateDistance(centroid,p,dist_meas))
+    return min(distances)
+
 """
 K-means Algorithm Implementation
 There are 3 parts to the implementation
@@ -67,26 +70,8 @@ There are 3 parts to the implementation
 2. Figure out k through either logarithmic approach(may not need this part) or copying pre-determined value
 3. Actual k-means algorithm
 """
-if __name__ == "__main__":
-    if len(sys.argv) != 6:
-      print >> sys.stderr, "Usage: k_means <input_file> <distmeas> <k> <output for cluster#,point pair> <ouput for centroid_list>"
-      exit (-1)
+def main(data, k, dist_meas, map_output):
 
-    #create SparkContext object
-    sc = SparkContext()	
-
-    #PART 1
-	#Transform into RDD containing location coordinates (latitude, longitude) in an array
-    data = sc.textFile(sys.argv[1])\
-      .map(lambda line: line.split("\t"))\
-	  .filter(lambda lcount: len(lcount) == 3)\
-	  .map(lambda line: (float(line[0]), float(line[1])))\
-      .persist()
-
-    # PART 2
-    #Figure out value of k (Implement if needed)
-    dist_meas = sys.argv[2]
-    k = int(sys.argv[3])
 
 	#PART 3
 	#Actual k-means Algorithm Implementation for geo-locations
@@ -115,7 +100,7 @@ if __name__ == "__main__":
     stop = False
     convergeDist = 0.1
     while stop is False:
-        cent_coords = clusterMap.map(lambda pnt: (pnt[0], getCartesianCoordiantes(pnt[1])))\
+        cent_coords = clusterMap.map(lambda pnt: (pnt[0], getCartesianCoordinates(pnt[1])))\
             .reduceByKey(lambda pnt1, pnt2: addPoints(pnt1, pnt2))\
             .map(lambda v: (v[0], getSphericalCoordinate(v[1][0], v[1][1], v[1][2])))\
             .sortByKey(True)\
@@ -144,8 +129,69 @@ if __name__ == "__main__":
             centroids_RDD = sc.parallelize(centroid_list)
             centroids_RDD.persist()
 
-    clusterMap.saveAsTextFile(sys.argv[4])
-    centroids_RDD.saveAsTextFile(sys.argv[5])
 
+    # save out files with results (format k, datatype, clusterId, lat, lon, dist to centroid)
+    clusterMap = clusterMap.repartition(1)\
+        .map(lambda line: (line[0], line[1], closestDistance(line[1], centroid_list, dist_meas)))\
+        .map(lambda line: str(k) + "," + "map" + "," + str(line[0]) + "," + str(line[1][0]) + "," + str(line[1][1]) + "," + str(line[2]))
+        #.saveAsTextFile(sys.argv[4] + dist_meas + "_" + str(k) + "/map")
+    centroids_RDD = centroids_RDD.repartition(1).zipWithIndex()\
+        .map(lambda cline: (cline[1], cline[0]))\
+        .map(lambda line: str(k) + "," + "centroid" + "," + str(line[0]) + "," + str(line[1][0]) + "," + str(line[1][1]) + "," + "0")
+        #.saveAsTextFile(sys.argv[5] + dist_meas + "_" + str(k) + "/centroids")
+
+    sc.union([centroids_RDD, clusterMap]).repartition(1).saveAsTextFile(map_output + dist_meas + "_" + str(k) + "/output")
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 6:
+      print >> sys.stderr, "Usage: k_means <input_file> <distmeas> <k> <output for cluster#,point pair> <ouput for centroid_list>"
+      exit (-1)
+
+    #create SparkContext object
+    sc = SparkContext()	
+
+    input_file = sys.argv[1]
+    dist_meas = sys.argv[2]
+    k = int(sys.argv[3])
+    map_output = sys.argv[4]
+
+    #PART 1
+	#Transform into RDD containing location coordinates (latitude, longitude) in an array
+    """ Script to import for loudacre data
+    data = sc.textFile(sys.argv[1])\
+      .map(lambda line: line.split(","))\
+	  .filter(lambda lcount: len(lcount) == 6)\
+	  .map(lambda line: (float(line[0]), float(line[1])))\
+      .persist()
+    """
+    """ Script to import for synthetic data
+    data = sc.textFile(sys.argv[1])\
+      .map(lambda line: line.split("\t"))\
+	  .filter(lambda lcount: len(lcount) == 3)\
+	  .map(lambda line: (float(line[0]), float(line[1])))\
+      .persist()
+    """
+    """ Script to import for hail data
+    """
+    # read in hail csv files
+    # split on , and remove anything with len != 10 (first 2 columns should be removed)
+    # remove next column name row
+    # remove any invalid values for prob/sevprob/hailsize
+    # only keep sevprob = 100
+    # returns (lat, lon, wgt)
+    data = sc.textFile(input_file)\
+      .map(lambda line: line.split(","))\
+	  .filter(lambda lcount: len(lcount) == 10)\
+      .filter(lambda lval: lval[0] != "#ZTIME")\
+      .filter(lambda vals: vals[7] != "-999" and vals[8] != "-999" and vals[9] != "-999")\
+      .filter(lambda sev: sev[7] == "100")\
+	  .map(lambda line: (float(line[2]), float(line[1])))\
+      .persist()
+
+    for k_loop in range(1, k):
+        print "Computing k=" + str(k_loop)
+        main(data, k_loop, dist_meas, map_output)
+  
 	#Stop SparkContext
     sc.stop()
