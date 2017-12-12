@@ -27,7 +27,9 @@ def getSphericalCoordinate(x,y,z):
     return (math.degrees(lat), math.degrees(lon))
 
 def EuclideanDistance(from_point, to_point):
-    return math.sqrt( ((to_point[0]-from_point[0])**2) + ((to_point[1]-from_point[1])**2) )
+    from_coord = getCartesianCoordinates(from_point)
+    to_coord = getCartesianCoordinates(to_point)
+    return math.sqrt( ((to_coord[0]-from_coord[0])**2) + ((to_coord[1]-from_coord[1])**2)  + ((to_coord[2]-from_coord[2])**2)
 
 # logic copied from https://www.movable-type.co.uk/scripts/latlong.html
 def GreatCircleDistance(from_point, to_point):
