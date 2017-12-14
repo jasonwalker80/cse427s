@@ -167,13 +167,22 @@ if __name__ == "__main__":
 	  .map(lambda line: (float(line[0]), float(line[1])))\
       .persist()
     """
+
     """ Script to import for synthetic data
     data = sc.textFile(sys.argv[1])\
       .map(lambda line: line.split("\t"))\
 	  .filter(lambda lcount: len(lcount) == 3)\
-	  .map(lambda line: (float(line[0]), float(line[1])))\
+	  .map(lambda line: (float(line[0]), float(line[1])) )\
       .persist()
     """
+	
+    """Script to import DBpedia data
+    data = sc.textFile(sys.argv[1])\
+    	.map(lambda line: line.split(" "))\
+	.map(lambda line: (float(line[0]), float(line[1]) ) )\
+	.persist()
+    """
+
     """ Script to import for hail data
     """
     # read in hail csv files
